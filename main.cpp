@@ -8,7 +8,7 @@ using namespace std;
 
 void displayHelp() {
 	cout << "------------------Help-----------------\n"
-		 << "Press ] to double click"
+		 << "Press CTRL and LEFT CLICK to double click"
 		 << "\n------------------Help-----------------" << endl;
 }
 
@@ -16,32 +16,30 @@ void record(fstream &file) {
 	file.close();
 	file.open("myclicks.txt", fstream::in | fstream::out | fstream::trunc);
 
-	cout << "\n\nPress [ to record left click" << endl;
+	cout << "\n\nPress SHIFT and LEFT CLICK to record left click" << endl;
 	cout << "Press CTRL and Q to quit recording" << endl;
 	cout << "Press CTRL and H to display help" << endl;
 	POINT loc;
 	while (true) {
 		GetCursorPos(&loc);
-		if(GetAsyncKeyState('a') < 0) {
+		if (GetAsyncKeyState(VK_LSHIFT) && GetAsyncKeyState(VK_LBUTTON)) {
 			cout << loc.x << " " << loc.y << " " << "l" << endl;
 			file << loc.x << " " << loc.y << " " << "l" << endl;
 			Sleep(250);
-		}
-		else if (GetAsyncKeyState('b') < 0) {
-			cout << loc.x << " " << loc.y << " " << "d" << endl;
-			file << loc.x << " " << loc.y << " " << "d" << endl; //WM_LBUTTONDBLCLK
-			Sleep(250);
-		}
+		} 
 		else if (GetAsyncKeyState(VK_LCONTROL)) {
 			if (GetKeyState('Q') < 0) {
 				return;
 			}
 			else if (GetKeyState('H') < 0) {
 				displayHelp();
-				
+			} else if (GetAsyncKeyState(VK_LBUTTON)) {
+				cout << loc.x << " " << loc.y << " " << "d" << endl;
+				file << loc.x << " " << loc.y << " " << "d" << endl; //WM_LBUTTONDBLCLK
 			}
 			Sleep(250);
 		}
+
 	}
 }
 
@@ -71,7 +69,8 @@ void click(fstream &input, fstream &settings) {
 		int dTime = GetDoubleClickTime();
 		settings >> times >> delay;
 		HWND hnd = FindWindow(NULL, TEXT("MapleStory"));
-		//SetForegroundWindow(hnd);
+		SetForegroundWindow(hnd);
+		SetActiveWindow(hnd);
 		for (int i = 0; i < times; i++) {
 			int x, y;
 			char type;
@@ -141,24 +140,7 @@ int main() {
 		system("pause");
 		exit(0);
 	}
-	if (RegisterHotKey(
-		NULL,
-		1,
-		MOD_NOREPEAT,
-		0x42))  //0x42 is 'b'
-	{
-		cout << (("Hotkey 'ALT+b' registered, using MOD_NOREPEAT flag\n"));
-	}
-
-	MSG msg = { 0 };
-	while (GetMessage(&msg, NULL, 0, 0) != 0)
-	{
-		if (msg.message == WM_HOTKEY)
-		{
-			cout << (("WM_HOTKEY received\n"));
-		}
-	}
-	/*while (true) {
+	while (true) {
 		int val = displayMenu();
 		if (val == 1) {
 			record(input);
@@ -176,7 +158,7 @@ int main() {
 			break;
 		}
 
-	}*/
+	}
 	cout << "Done";
 	input.close();
 	settings.close();
